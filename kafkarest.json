@@ -8,7 +8,7 @@
     "description": "This is the rest based microgateway app",
     "configurations": [
       {
-        "name": "restConfig",
+        "name": "restConfigs",
         "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
         "description": "Configuration for rest trigger",
         "settings": {
@@ -30,7 +30,7 @@
         "description": "Animals rest trigger - PUT animal details",
         "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
         "settings": {
-          "config": "${configurations.restConfig}",
+          "config": "${configurations.restConfigs}",
           "method": "PUT",
 		      "path": "/pets",
           "optimize":"true"
@@ -41,7 +41,7 @@
         "description": "Animals rest trigger - get animal details",
         "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
         "settings": {
-          "config": "${configurations.restConfig}",
+          "config": "${configurations.restConfigs}",
           "method": "GET",
 		      "path": "/pets/{petId}",
           "optimize":"true"
