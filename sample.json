@@ -12,7 +12,7 @@
         "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
         "description": "Configuration for rest trigger",
         "settings": {
-          "port": "9097"
+          "port": "9098"
         }
       },
 	  {
