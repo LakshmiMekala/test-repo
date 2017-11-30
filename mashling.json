@@ -1,0 +1,318 @@
+{
+  "mashling_schema": "0.2",
+  "gateway": {
+    "name": "masterwin",
+    "version": "1.0.0",
+    "display_name":"Rest Conditional Gateway",
+    "display_image":"displayImage.svg",
+    "description": "This is the rest based microgateway app",
+    "configurations": [
+      {
+        "name": "restConfig",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
+        "description": "Configuration for rest trigger",
+        "settings": {
+          "port": "9096"
+        }
+      },
+      {
+        "name": "kafkaConfig",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/kafkasubrouter",
+        "description": "Configuration for kafka cluster",
+        "settings": {
+          "BrokerUrl": "localhost:9092"
+        }
+      },
+      {
+				"name": "kafkaConfig1",
+				"type": "github.com/TIBCOSoftware/flogo-contrib/trigger/kafkasub",
+				"description": "Configuration for kafka cluster",
+				"settings": {
+					"BrokerUrl": "localhost:9092"
+				}
+			},
+      {
+        "name": "mqttConfig",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/mqtt",
+        "description": "Configuration for mqtt",
+        "settings": {
+          "broker": "tcp://localhost:1883",
+          "id": "flogo",
+          "user": "",
+          "password": "",
+          "store": "",
+          "qos": "0",
+          "cleansess": "false"
+        }
+      },
+      {
+        "name": "mqttConfig1",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/mqtt",
+        "description": "Configuration for MQTT",
+        "settings": {
+          "broker": "tcp://localhost:1883",
+          "id": "flogo",
+          "user": "",
+          "password": "",
+          "store": "",
+          "qos": "0",
+          "cleansess": "false",
+          "tracer": "zipkin",
+          "tracerEndpoint": "http://localhost:9411/api/v1/spans"
+        }
+      },
+      {
+        "name": "restConfig2",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
+        "description": "Configuration for rest trigger",
+        "settings": {
+          "port": "9097",
+          "tracer": "zipkin",
+          "tracerEndpoint": "http://localhost:9411/api/v1/spans"
+        }
+      },
+      {
+        "name": "secureConfig",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
+        "description": "Configuration for rest secure trigger with client auth",
+        "settings": {
+          "port": "9098",
+          "enableTLS": "true",
+          "serverCert":"${env.SERVER_CERT}",
+          "serverKey":"${env.SERVER_KEY}",
+          "enableClientAuth": "true",
+          "trustStore": "${env.TRUST_STORE}"
+        }
+      }
+    ],
+    "triggers": [
+      {
+        "name": "animals_rest_trigger",
+        "description": "Animals rest trigger - PUT animal details",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
+        "settings": {
+          "config": "${configurations.restConfig}",
+          "method": "PUT",
+		      "path": "/pets",
+          "optimize":"true"
+        }
+      },
+      {
+				"name": "kafka_trigger1",
+				"description": "The trigger on kafka 'users' topic",
+				"type": "github.com/TIBCOSoftware/flogo-contrib/trigger/kafkasub",
+				"settings": {
+					"Topic": "publishpet",
+					"config": "${configurations.kafkaConfig1}"
+				}
+			},
+      {
+        "name": "get_animals_rest_trigger",
+        "description": "Animals rest trigger - get animal details",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
+        "settings": {
+          "config": "${configurations.restConfig}",
+          "method": "GET",
+		      "path": "/pets/{petId}",
+          "optimize":"true"
+        }
+      },
+      {
+        "name": "users_trigger",
+        "description": "The trigger on kafka 'users' topic",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/kafkasubrouter",
+        "settings": {
+          "Topic": "users",
+          "config": "${configurations.kafkaConfig}"
+        }
+      },
+      {
+        "name": "get_mqtt",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/mqtt",
+        "settings": {
+          "config": "${configurations.mqttConfig}",
+          "topic": "get",
+          "optimize": "true"
+        }
+      },
+      {
+        "name": "put_mqtt",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/mqtt",
+        "settings": {
+          "config": "${configurations.mqttConfig}",
+          "topic": "put",
+          "optimize": "true"
+        }
+      },
+      {
+        "name": "MQTT_Trigger",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/mqtt",
+        "settings": {
+          "config": "${configurations.mqttConfig1}",
+          "topic": "alert",
+          "optimize": "true"
+        }
+      },
+      {
+        "name": "rest_trigger",
+        "description": "The trigger on 'pets' endpoint",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
+        "settings": {
+          "config": "${configurations.restConfig2}",
+          "method": "GET",
+          "path": "/pets/{petId}",
+          "optimize": "true"
+        }
+      },
+      {
+        "name": "get_animals_rest_secure_trigger",
+        "description": "Animals rest secure trigger - get animal details",
+        "type": "github.com/TIBCOSoftware/mashling/ext/flogo/trigger/gorillamuxtrigger",
+        "settings": {
+          "config": "${configurations.secureConfig}",
+          "method": "GET",
+		      "path": "/pets/{petId}",
+          "optimize":"true"
+        }
+      }
+    ],
+    "event_handlers": [
+      {
+        "name": "mammals_handler",
+        "description": "Handle mammals",
+        "reference": "github.com/TIBCOSoftware/mashling/lib/flow/RestTriggerToRestPutActivity.json"
+      },
+      {
+        "name": "birds_handler",
+        "description": "Handle birds",
+        "reference": "github.com/TIBCOSoftware/mashling/lib/flow/RestTriggerToRestPutActivity.json"
+      },
+      {
+        "name": "animals_handler",
+        "description": "Handle other animals",
+        "reference": "github.com/TIBCOSoftware/mashling/lib/flow/RestTriggerToRestPutActivity.json"
+      },
+      {
+        "name": "animals_get_handler",
+        "description": "Handle other animals",
+        "reference": "github.com/TIBCOSoftware/mashling/lib/flow/RestTriggerToRestGetActivity.json"
+      },
+      {
+        "name": "usa_users_topic_handler",
+        "description": "Handle the user access for USA users",
+        "reference": "github.com/TIBCOSoftware/mashling/lib/flow/kafkaFlow.json"
+      },
+      {
+        "name": "asia_users_topic_handler",
+        "description": "Handle the user access for asia users",
+        "reference": "github.com/TIBCOSoftware/mashling/lib/flow/kafkaFlow.json"
+      },
+      {
+				"name": "kafka_handler1",
+				"description": "Handle the user access",
+				"reference": "github.com/TIBCOSoftware/mashling/lib/flow/KafkaTriggerToKafkaActivity.json",
+				"params": {
+				}
+      },
+      {
+        "name": "Predictive_Maintenance",
+        "description": "Lambda function - predictive maintenance",
+        "reference": "github.com/pointlander/lambda/lib/flow/Lambda.json"
+      },
+      {
+        "name": "Call_Field_OPS",
+        "description": "Live Apps case - Field Ops",
+        "reference": "github.com/raji-narayanan/mashlingflows/mqtt-to-http-flow.json"
+      },
+      {
+        "name": "get_pet_handler",
+        "description": "Handle the user access",
+        "reference": "github.com/TIBCOSoftware/mashling/lib/flow/Tracing.json"
+      },
+      {
+        "name": "animals_get_handler",
+        "description": "Handle animals",
+        "reference": "github.com/TIBCOSoftware/mashling/lib/flow/SecureRestInvoker.json"
+      }
+    ],
+    "event_links": [
+      {
+        "triggers": ["animals_rest_trigger", "put_mqtt"],
+        "dispatches": [
+          {
+            "if": "${trigger.content.name in (ELEPHANT,CAT)}",
+            "handler": "mammals_handler"
+          },
+          {
+            "if": "${trigger.content.name == SPARROW}",
+            "handler": "birds_handler"
+          },
+          {
+            "handler": "animals_handler"
+          }
+        ]
+      },
+      {
+        "triggers": ["get_animals_rest_trigger","get_mqtt"],
+        "dispatches": [
+          {
+            "handler": "animals_get_handler"
+          }
+        ]
+      },
+      {
+        "triggers": ["users_trigger"],
+        "dispatches": [
+          {
+            "if": "${trigger.content.country == USA}",
+            "handler": "usa_users_topic_handler"
+          },
+          {
+            "if": "${trigger.content.country in (IND,CHN,JPN)}",
+            "handler": "asia_users_topic_handler"
+          }
+        ]
+      },
+      {
+				"triggers": ["kafka_trigger1"],
+				"dispatches": [
+					{
+						"handler": "kafka_handler1"
+					}
+				]
+      },
+      {
+        "triggers": [
+          "MQTT_Trigger"
+        ],
+        "dispatches": [
+          {
+            "if": "${trigger.content.type in (urgent,critical)}",
+            "handler": "Call_Field_OPS"
+          },
+          {
+            "handler": "Predictive_Maintenance"
+          }
+        ]
+      },
+      {
+        "triggers": [
+          "rest_trigger"
+        ],
+        "dispatches": [
+          {
+            "handler": "get_pet_handler"
+          }
+        ]
+      },
+      {
+        "triggers": ["get_animals_rest_secure_trigger"],
+        "dispatches": [
+          {
+            "handler": "animals_get_handler"
+          }
+        ]
+      }
+    ]
+  }
+}
