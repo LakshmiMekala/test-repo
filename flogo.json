@@ -1,5 +1,5 @@
 {
-	"name": "rest-conditional-gateway",
+	"name": "rest-conditional-gatewayA",
 	"type": "flogo:app",
 	"version": "1.0.0",
 	"description": "This is the rest based microgateway app",
