@@ -1,5 +1,5 @@
 {
-  "mashling_schema": "0.2",
+  "mashling_schema": "0.2.1",
   "gateway": {
     "name": "restgw1",
     "version": "1.0.0",
